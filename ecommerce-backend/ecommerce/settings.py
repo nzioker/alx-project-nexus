@@ -2,11 +2,10 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-# Use the correct import for python-decouple
 try:
     from decouple import config, Csv
 except ImportError:
-    # Fallback for development
+    
     def config(key, default=None, cast=None):
         return os.environ.get(key, default)
     
@@ -15,7 +14,6 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Read .env file or use defaults
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
 DEBUG = config('DEBUG', default='True') == 'True'
@@ -30,13 +28,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    # Third-party apps
     'rest_framework',
     'corsheaders',
     'django_filters',
     'drf_yasg',
     
-    # Local apps
     'users',
     'products',
 ]
@@ -72,7 +68,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -84,7 +79,6 @@ DATABASES = {
     }
 }
 
-# REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -101,17 +95,14 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-# CORS
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
     default='http://localhost:3000,http://127.0.0.1:3000'
 ).split(',')
 
-# Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

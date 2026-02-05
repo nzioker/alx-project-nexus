@@ -3,7 +3,6 @@ from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .models import UserProfile
 
-# Get the actual model class
 User = get_user_model()
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -22,11 +21,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields don't match."})
         
-        # Check if email already exists
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError({"email": "A user with this email already exists."})
         
-        # Check if username already exists
         if User.objects.filter(username=attrs['username']).exists():
             raise serializers.ValidationError({"username": "A user with this username already exists."})
         

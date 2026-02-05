@@ -115,7 +115,6 @@ class ProductReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsOwnerOrReadOnly]
     
     def perform_update(self, serializer):
-        # When updating, set is_approved to False for moderation
         serializer.save(is_approved=False)
 
 class ProductStatisticsView(APIView):

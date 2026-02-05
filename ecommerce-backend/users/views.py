@@ -10,7 +10,7 @@ from .serializers import (
     UserSerializer,
     UserProfileSerializer
 )
-from .models import UserProfile
+
 
 User = get_user_model()
 
