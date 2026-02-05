@@ -7,6 +7,24 @@ class CustomUser(AbstractUser):
     address = models.TextField(blank=True, null=True)
     is_vendor = models.BooleanField(default=False)
     
+    # Override groups and user_permissions with unique related_name
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='customuser_set',  
+        related_query_name='customuser',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='customuser_set',  
+        related_query_name='customuser',
+    )
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     

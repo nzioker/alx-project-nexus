@@ -1,24 +1,40 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import CustomUser, UserProfile
+from .models import UserProfile
+
+# Get the actual model class
+User = get_user_model()
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
     
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('email', 'username', 'password', 'password2', 'first_name', 'last_name')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'password2': {'write_only': True},
+        }
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields don't match."})
+        
+        # Check if email already exists
+        if User.objects.filter(email=attrs['email']).exists():
+            raise serializers.ValidationError({"email": "A user with this email already exists."})
+        
+        # Check if username already exists
+        if User.objects.filter(username=attrs['username']).exists():
+            raise serializers.ValidationError({"username": "A user with this username already exists."})
+        
         return attrs
     
     def create(self, validated_data):
         validated_data.pop('password2')
-        user = CustomUser.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
         UserProfile.objects.create(user=user)
         return user
 
@@ -32,7 +48,7 @@ class UserLoginSerializer(serializers.Serializer):
         
         if email and password:
             user = authenticate(request=self.context.get('request'),
-                              email=email, password=password)
+                              username=email, password=password)
             if not user:
                 raise serializers.ValidationError('Unable to log in with provided credentials.')
         else:
@@ -48,11 +64,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('id', 'email', 'username', 'avatar', 'bio', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
     
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('id', 'email', 'username', 'first_name', 'last_name', 
                   'phone_number', 'address', 'is_vendor', 'profile')
+        read_only_fields = ('is_vendor',)

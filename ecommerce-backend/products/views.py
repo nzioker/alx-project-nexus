@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import FilterSet, NumberFilter, CharFilter, BooleanFilter  
 from django.db.models import Q, Avg, Count
 from django.shortcuts import get_object_or_404
 from .models import Category, Product, ProductReview
@@ -28,13 +29,13 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.is_active = False
         instance.save()
 
-class ProductFilter(filters.FilterSet):
-    min_price = filters.NumberFilter(field_name="price", lookup_expr='gte')
-    max_price = filters.NumberFilter(field_name="price", lookup_expr='lte')
-    category = filters.CharFilter(field_name="category__slug")
-    vendor = filters.CharFilter(field_name="vendor__email")
-    in_stock = filters.BooleanFilter(field_name="quantity", lookup_expr='gt')
-    featured = filters.BooleanFilter(field_name="is_featured")
+class ProductFilter(FilterSet):  
+    min_price = NumberFilter(field_name="price", lookup_expr='gte')
+    max_price = NumberFilter(field_name="price", lookup_expr='lte')
+    category = CharFilter(field_name="category__slug")
+    vendor = CharFilter(field_name="vendor__email")
+    in_stock = BooleanFilter(field_name="quantity", lookup_expr='gt')
+    featured = BooleanFilter(field_name="is_featured")
     
     class Meta:
         model = Product
