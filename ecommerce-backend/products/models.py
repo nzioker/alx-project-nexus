@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
+from django.utils.text import slugify
 
 User = settings.AUTH_USER_MODEL
 
@@ -21,6 +22,19 @@ class Category(models.Model):
             models.Index(fields=['slug']),
             models.Index(fields=['is_active']),
         ]
+    
+    def save(self, *args, **kwargs):
+        if not self.slug or self.slug.strip() == '':
+            self.slug = slugify(self.name)
+        
+        if self.slug:
+            original_slug = self.slug
+            counter = 1
+            while Category.objects.filter(slug=self.slug).exclude(id=self.id).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return self.name
@@ -42,8 +56,6 @@ class Product(models.Model):
     
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, 
                                 null=True, related_name='products')
-    vendor = models.ForeignKey(User, on_delete=models.CASCADE, 
-                              related_name='products', limit_choices_to={'is_vendor': True})
     
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
@@ -60,7 +72,6 @@ class Product(models.Model):
             models.Index(fields=['is_active']),
             models.Index(fields=['is_featured']),
             models.Index(fields=['category', 'is_active']),
-            models.Index(fields=['vendor', 'is_active']),
         ]
     
     def __str__(self):

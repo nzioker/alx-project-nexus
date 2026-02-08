@@ -4,11 +4,14 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from drf_yasg.utils import swagger_auto_schema 
+from drf_yasg import openapi
 from .serializers import (
     UserRegisterSerializer, 
     UserLoginSerializer, 
     UserSerializer,
-    UserProfileSerializer
+    UserProfileSerializer,
+    LogoutSerializer
 )
 
 
@@ -31,11 +34,12 @@ class RegisterView(generics.CreateAPIView):
             'access': str(refresh.access_token),
         }, status=status.HTTP_201_CREATED)
 
-class LoginView(APIView):
+class LoginView(generics.CreateAPIView):  
+    serializer_class = UserLoginSerializer  
     permission_classes = [permissions.AllowAny]
     
-    def post(self, request):
-        serializer = UserLoginSerializer(data=request.data, context={'request': request})
+    def create(self, request, *args, **kwargs):  
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         
@@ -49,7 +53,14 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+    @swagger_auto_schema(
+        request_body=LogoutSerializer,  
+        responses={
+            205: 'Logout successful - refresh token blacklisted',
+            400: 'Bad request - missing or invalid refresh token',
+            401: 'Unauthorized - invalid or expired token'
+        }
+    )
     def post(self, request):
         try:
             refresh_token = request.data["refresh"]

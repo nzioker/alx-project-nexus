@@ -46,7 +46,7 @@ class ProductSerializer(serializers.ModelSerializer):
         source='category',
         write_only=True
     )
-    vendor_email = serializers.EmailField(source='vendor.email', read_only=True)
+    
     images = ProductImageSerializer(many=True, read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
     reviews = ProductReviewSerializer(many=True, read_only=True)
@@ -58,7 +58,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'slug', 'description', 'price', 'compare_at_price',
             'cost_per_item', 'sku', 'barcode', 'quantity', 'low_stock_threshold',
-            'category', 'category_id', 'vendor_email', 'is_active', 'is_featured',
+            'category', 'category_id', 'is_active', 'is_featured',
             'in_stock', 'low_stock', 'discount_percentage', 'images', 'variants',
             'reviews', 'average_rating', 'review_count', 'created_at', 'updated_at'
         )

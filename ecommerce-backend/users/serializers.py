@@ -36,14 +36,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return user
 
 class UserLoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(write_only=True, required=True)
     
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         
         if email and password:
+            from django.contrib.auth import authenticate
             user = authenticate(request=self.context.get('request'),
                               username=email, password=password)
             if not user:
@@ -69,5 +70,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name', 'last_name', 
-                  'phone_number', 'address', 'is_vendor', 'profile')
-        read_only_fields = ('is_vendor',)
+                  'phone_number', 'address', 'profile') 
+        
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(
+        required=True,
+        help_text="Refresh token to blacklist for logout"
+    )
